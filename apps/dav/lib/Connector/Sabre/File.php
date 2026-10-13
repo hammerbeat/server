@@ -231,6 +231,11 @@ class File extends Node implements IFile {
 						/** @var IWriteStreamStorage $partStorage */
 						$count = $partStorage->writeStream($internalPartPath, $wrappedData, $expected);
 					} catch (GenericFileException $e) {
+						for ($p = $e->getPrevious(); $p !== null; $p = $p->getPrevious()) {
+							if ($p instanceof InvalidContentException) {
+								throw new UnsupportedMediaType($p->getMessage(), 0, $p);
+							}
+						}
 						$logger = Server::get(LoggerInterface::class);
 						$logger->error('Error while writing stream to storage: ' . $e->getMessage(), ['exception' => $e, 'app' => 'webdav']);
 						$result = $isEOF;
